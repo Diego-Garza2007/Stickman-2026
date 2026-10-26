@@ -1,0 +1,29 @@
+<!DOCTYPE html><html><body style="margin:0;background:#111">
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+<script>const _G=Phaser.Game;Phaser.Game=class extends _G{constructor(c){super(c);window.g=this;}};</script>
+<script src="levels.js"></script><script src="progress.js"></script><script src="menu.js"></script><script src="enemies.js"></script><script src="main.js"></script>
+<script>
+window.addEventListener('error',e=>console.log('ERR '+e.message+' @'+e.lineno+' '+e.filename));
+const oc=LevelScene.prototype.create;
+const lh=LevelScene.prototype.loseHalfHeart;
+LevelScene.prototype.loseHalfHeart=function(){console.log('LOSE hp='+Progress.hp+' y='+Math.round(this.stickman.y)+' x='+Math.round(this.stickman.x)+' fall='+(this.stickman.y>HEIGHT));return lh.call(this);};
+let ran=false;
+LevelScene.prototype.create=function(){oc.call(this);const s=this;if(ran)return;ran=true;
+ try{
+ s.hasSword=true;const e=s.enemies[0];
+ s.stickman.x=e.x-60;s.stickman.setFlipX(false);s.stickman.y=s.floorY;
+ s.castBasic();s.attackTime=ATTACK_DURATION-0.12;s.updateStrike();s.updateStrike();
+ console.log('T1 sword basic hp(4->2)='+e.hp+' state='+e.state);
+ s.attackTime=0;s.strike=null;s.cd.slash=0;s.castSlash();s.attackTime=ATTACK_DURATION-0.1;s.updateStrike();
+ console.log('T2 slash hp(2->dead)='+e.hp+' alive='+e.alive);
+ const e2=s.enemies[1];s.stickman.x=e2.x+50;e2.dir=-1;e2.state='strike';e2.timer=0.2;e2.struck=false;s.invuln=0;
+ e2.update(0.016,1000);console.log('T3 enemy hit player hp(6->5)='+Progress.hp);
+ s.invuln=0;e2.struck=false;s.dashTime=0.1;e2.update(0.016,1000);console.log('T4 dash dodge hp(5)='+Progress.hp);
+ s.dashTime=0;
+ const e3=s.enemies[2];s.stickman.x=e3.x-200;s.stickman.y=s.floorY;e3.dir=1;e3.update(0.016,1000);console.log('T5 sees player: '+e3.state);
+ s.stickman.x=e3.x+100;e3.state='patrol';e3.dir=-1;e3.update(0.016,1000);console.log('T6 behind close sees: '+e3.state);
+ s.stickman.x=e3.x+300;e3.state='patrol';e3.dir=-1;e3.update(0.016,1000);console.log('T7 behind far ignores: '+e3.state);
+ }catch(err){console.log('ERR '+err.stack);}
+};
+setTimeout(()=>window.g.scene.start('Level',{levelIndex:2,freshRun:true}),500);
+</script></body></html>
